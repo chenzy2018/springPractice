@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    ">
+
+    <!-- 引入其他配置文件，*就表示以applicationContext-开头的，后缀随意 -->
+    <import resource="applicationContext-*.xml" />
+
+    <!-- 最原始方式生成bean -->
+    <bean id="person" name="humen,star" class="com.itczy.org.domain.dto.Person">
+        <!-- 这种方式需要对应类中有相对应的构造方法 -->
+        <!--<constructor-arg name="name" value="czy"></constructor-arg>
+        <constructor-arg name="age" value="18"></constructor-arg>
+        <constructor-arg name="food" ref="food"></constructor-arg>-->
+
+        <!-- 这种方式是相当于调用对应属性的set方法，可以不存在对应构造函数，比较常用 -->
+        <property name="name"><value>czy1</value></property>
+        <property name="age" value="18"></property>
+        <property name="food" ref="food"></property>
+        <property name="git">
+            <!-- Properties类型属性赋值方式 -->
+            <value>paoniu:80,dushu:50,youyong:60</value>
+        </property>
+        <property name="list">
+            <array>
+                <value>a</value>
+                <value>b</value>
+                <value>c</value>
+            </array>
+        </property>
+        <property name="set">
+            <array>
+                <value>d</value>
+                <value>e</value>
+                <value>f</value>
+            </array>
+        </property>
+        <property name="map">
+            <!-- map类型使用两种方式均可 -->
+            <!--<props>
+                <prop key="a">1</prop>
+                <prop key="b">2</prop>
+                <prop key="c">3</prop>
+            </props>-->
+            <map>
+                <entry key="a" value="1"></entry>
+                <entry key="b" value="2"></entry>
+                <entry key="c" value="3"></entry>
+            </map>
+        </property>
+        <property name="str">
+            <array>
+                <value>a</value>
+                <value>b</value>
+                <value>c</value>
+            </array>
+        </property>
+    </bean>
+
+    <!-- 给person取个别名，和在name里加上person2一个道理，geiBean获取到的bean和上面获取到的是同一个bean -->
+    <alias name="person" alias="person2"/>
+
+</beans>

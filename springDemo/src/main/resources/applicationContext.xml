@@ -8,8 +8,16 @@
     <!-- 引入其他配置文件，*就表示以applicationContext-开头的，后缀随意 -->
     <import resource="applicationContext-*.xml" />
 
-    <!-- 最原始方式生成bean -->
-    <bean id="person" name="humen,star" class="com.itczy.org.domain.dto.Person">
+    <!--
+        最原始方式生成bean
+        scope指定bean的作用域：
+            singleton：容器级别单例，默认值
+            prototype：唯一多例的情况，每次获取都会返回一个新的对象
+            request：请求级别单例
+            session：会话级别单例
+            application：应用级别单例
+    -->
+    <bean id="person" name="humen,star" class="com.itczy.org.domain.dto.Person"><!--scope="prototype"-->
         <!-- 这种方式需要对应类中有相对应的构造方法 -->
         <!--<constructor-arg name="name" value="czy"></constructor-arg>
         <constructor-arg name="age" value="18"></constructor-arg>

@@ -10,5 +10,4 @@
         <constructor-arg name="color" value="red"></constructor-arg>
     </bean>
 
-
 </beans>

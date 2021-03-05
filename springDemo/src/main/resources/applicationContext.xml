@@ -2,8 +2,11 @@
 <beans
         xmlns="http://www.springframework.org/schema/beans"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
-    ">
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
+
+        default-autowire="byName"
+    >
+    <!-- default-autowire用于全局自动装配，byName表示通过名称，byType表示根据class -->
 
     <!-- 引入其他配置文件，*就表示以applicationContext-开头的，后缀随意 -->
     <import resource="applicationContext-*.xml" />
@@ -70,9 +73,17 @@
     <!-- 给person取个别名，和在name里加上person2一个道理，geiBean获取到的bean和上面获取到的是同一个bean -->
     <alias name="person" alias="person2"/>
 
+    <!-- depends-on是用来表示一个bean A的实例化依赖另一个bean B的实例化， 但是A并不需要持有一个B的对象，在初始化person1之前先初始化person -->
+    <bean id="person1" class="com.itczy.org.domain.dto.Person" depends-on="person">
+        <!-- 给str赋空值 -->
+        <property name="str"><value></value></property>
+        <!-- 给list赋null值 -->
+        <property name="list"><null></null></property>
+    </bean>
+
     <!-- 动态工厂配置 -->
     <bean id="carFactory" class="com.itczy.org.factory.CarFactory"></bean>
-    <bean id="car" factory-bean="carFactory" factory-method="getCar1">
+    <bean id="car1" factory-bean="carFactory" factory-method="getCar1">
         <constructor-arg value="audi"></constructor-arg>
     </bean>
 

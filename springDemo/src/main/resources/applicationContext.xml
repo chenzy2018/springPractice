@@ -70,4 +70,14 @@
     <!-- 给person取个别名，和在name里加上person2一个道理，geiBean获取到的bean和上面获取到的是同一个bean -->
     <alias name="person" alias="person2"/>
 
+    <!-- 动态工厂配置 -->
+    <bean id="carFactory" class="com.itczy.org.factory.CarFactory"></bean>
+    <bean id="car" factory-bean="carFactory" factory-method="getCar1">
+        <constructor-arg value="audi"></constructor-arg>
+    </bean>
+
+    <!-- 静态工厂 -->
+    <bean id="car" class="com.itczy.org.factory.CarFactory" factory-method="getCar">
+        <constructor-arg value="audi"></constructor-arg>
+    </bean>
 </beans>

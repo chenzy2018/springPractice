@@ -1,0 +1,85 @@
+spring直接注入实现过程：
+    1、使用反射，获取到某个类所有的属性，包括private属性
+    2、根据属性获取其上注解，根据注解进入不同的逻辑
+    3、从beanFactory中获取对应类型的单例bean，注入到属性中
+
+beanFactory：一个装bean的容器
+    支持根据ID或者TYPE，在O(1)时间复杂度范围内找到beanDefinition
+
+    Map<String,beanDefinition> map;//支持id
+    Map<Class,beanDefinition> map;//支持type
+
+
+Spring容器的refresh()：创建刷新
+    1.prepareRefresh()：刷新前的预处理
+        1、initPropertySources()：初始化一些属设置(由子类实现，个性化设置)
+        2、getEnviroment().validataRequireedProperties()：检验属性的合法性等
+        3、this.earlyApplicationEvents = new LinkedHashSet<>() ：保存容器中的一些早起的事件
+
+    2.obtainFreshBeanFactory()：获取beanFactory实例
+        1、refreshBeanFactory()：刷新或创建beanFactory
+        2、getBeanFactory()：将刚生成的beanFactory返回
+
+    3、prepareBeanFactory(beanFactory):beanFactory与准备工作(以上创建的beanFactory好多属性没有值，只有一些默认的值)
+
+    4、postProcessBeanFactory(beanFactory)：BeanFactory准备工作完成后进行的后置处理工作
+        子类通过重写这个方法在BeanFactory创建并预准备完成以后做进一步的设置
+
+    -------------------BeanFactory创建和预准备工作完成--------------------------------------
+
+    5.invokeBeanFactoryPostProcessors(beanFactory)：执行BeanFactoryPostProcessor的方法
+        两个接口：BeanFactoryPostProcessor,BeanDefinitionRegistryPostProcessor
+
+        BeanFactoryPostProcessor的方法：
+            先执行BeanDefinitionRegistryPostProcessor
+                1>获取实现了priorityOrdered的优先处理
+                2>获取beanFactory实例
+
+        InstaintiationAwareBeanPostProcessor
+        SmartInstaintiationAwareBeanPostProcessor  ---> beanPostProcessor
+        拦截我们的bean的创建：后置处理器里进行增强，动态代理
+
+    6.initMessageSource()：标签国际化资源，初始化MessageSoource组件(国际化功能：消息解析，消息绑定)
+        messageSource：判断容器中是否有ID为messageSource，类型是MessageSource容器
+                如果没有，就创建一个new DelegatingMessageSource()，并注册到BeanFactory
+
+    7、initApplicationEventMulticaster()：初始化事件派发器
+        获取BeanFactory
+        判断当前BeanFactory有没有一个bean为applicationEventMulticaster的bean
+        没有就创建并注册到BeanFactory
+
+    8、onRefresh()：留给子类实现，重写此方法可以再容器刷新的时候可以自定义逻辑
+
+    9、registerListeners()：将所有项目里面的applicationListener注册进到容器汇总
+        从我们的容器中拿到所有的applicationListener
+
+    10、finishBeanFactoryInitialization(beanFactory)：将所有项目的单实例bean(非懒加载)初始化到容器中
+        beanFactory.preInstanttiateSingetons()：单实例bean(非懒加载)初始化
+            getMergedLocalBeanDefinition(beanName)：获取bean的定义信息，依次进行创建和初始化
+            doGetBean()：
+            Object sharedInstance = getSingleton(beanName)：先获取MAP缓存汇总保存的实力bean，如果这个bean第二次来拿，就直接从缓存中拿到
+            markBeanAsCreated(beanName)：标记当前bean已经被创建
+            mbd.getDependsOn()：获取当前bean依赖的其他bean，如果存在的话，使用getBean从容器中拿出来
+            Object bean = resolveBeforeInstantiation(beanName, mbdToUse)：让我们BeanPostProcessor尝试返回一个代理对象
+            Object beanInstance = doCreateBean(beanName, mbdToUse, args)：开始创建bean实例
+            populateBean(beanName, mbd, instanceWrapper)：bean属性赋值
+                if (bp instanceof InstantiationAwareBeanPostProcessor) ：后置处理器的处理
+                    postProcessAfterInstantiation调用后置处理方法对bean进行定制处理
+                applyPropertyValues(beanName, mbd, bw, pvs)：设置属性值
+            initializeBean(beanName, exposedObject, mbd)：bean前后处理器执行地方，AOP动态代理增强的入口
+
+    11、finishRefresh()
+
+
+spring给出的扩展：
+    1.在创建对象之前可以让你干一点事
+    2.容器初始化之前可以干点事
+    3.在不同阶段发出不同的事件，你还可以干点事
+    4.抽象出各个接口，让你为所欲为
+    5.面向接口编程
+
+总结：
+    一切框架必须考虑扩展性
+    1.抽象
+    2.设计模式
+

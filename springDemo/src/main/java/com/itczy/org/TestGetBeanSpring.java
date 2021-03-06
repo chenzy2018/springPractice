@@ -6,7 +6,7 @@ import com.itczy.org.factory.CarFactory;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class TestGetBean {
+public class TestGetBeanSpring {
     public static void main(String[] args) throws Exception {
         //从spring容器中获取bean，原始方式
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");

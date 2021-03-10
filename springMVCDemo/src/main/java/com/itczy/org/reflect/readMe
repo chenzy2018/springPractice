@@ -9,21 +9,61 @@ beanFactory：一个装bean的容器
     Map<String,beanDefinition> map;//支持id
     Map<Class,beanDefinition> map;//支持type
 
+factoryBean：工厂bean，用于构建bean
 
-Spring容器的refresh()：创建刷新
+bean的生命周期：
+    1、经历一堆xxxAware，把bean需要的spring组件调用setXX给bean
+    2、BeanPostProcessor beforeInitializing   bean初始化之前干点事
+    3、IntializingBean   bean初始化干点事
+    4、init-method  用户自定义的初始化方法
+    5、BeanPostProccor afterInitializing  bean初始化之后干点事
+    6、DisposableBean  bean销毁干点事
+    7、Destroy-Method  用户自定义的销毁方法
+
+ApplicationContext是spring的核心接口：
+    SimpleApplicationEventMulticaster：spring的事件发布的实现类
+    StandardEnvironment：spring的环境变量初始化的实现类
+
+
+refresh()：创建刷新
     1.prepareRefresh()：刷新前的预处理
-        1、initPropertySources()：初始化一些属设置(由子类实现，个性化设置)
+        1、initPropertySources()：初始化一些属设置(由子类实现，个性化设置)，是个钩子
         2、getEnviroment().validataRequireedProperties()：检验属性的合法性等
-        3、this.earlyApplicationEvents = new LinkedHashSet<>() ：保存容器中的一些早起的事件
+            ConfigurablePropertyResolver：可配置的属性转换器，用于自定义属性转换器(spring提供了一些属性转换器，如果不够用，就需要自定义)
+                配置如下：data.time=20210301-14:12:10
 
-    2.obtainFreshBeanFactory()：获取beanFactory实例
+                @Value("data.time")
+                private Date date;
+                转不成功，或者前端传回上面的数据，自动装入bean中，也不成功，因为这种格式数据不符合spring的要求，就需要使用自定义的属性转换器
+        3、this.earlyApplicationEvents = new LinkedHashSet<>() ：保存容器中的需要预刷新的事件
+
+    2.obtainFreshBeanFactory()： 获取beanFactory实例
         1、refreshBeanFactory()：刷新或创建beanFactory
+            如果存在就先摧毁：
+            if (hasBeanFactory()) {
+                destroyBeans();
+                closeBeanFactory();
+            }
+
+            定义需要忽略的接口实现，加到一个set里
+            ignoreDependencyInterface(BeanNameAware.class);
+            ignoreDependencyInterface(BeanFactoryAware.class);
+            ignoreDependencyInterface(BeanClassLoaderAware.class);
+
+            customizeBeanFactory(beanFactory)：自定义Bean工厂
+                allowBeanDefinitionOverriding：允许bean定义信息覆盖(同名bean覆盖)，默认是true，false会报错
+                allowCircularReferences：允许循环依赖，默认是true，false会报错
+
+            loadBeanDefinitions(beanFactory)：加载bean定义信息，重点
+                BeanNameGenerator：用于定义bean的名称的接口，如果没有指定value，就会默认创建一个(比如注解的方式会把类名的首字母变成小写)
+
         2、getBeanFactory()：将刚生成的beanFactory返回
 
     3、prepareBeanFactory(beanFactory):beanFactory与准备工作(以上创建的beanFactory好多属性没有值，只有一些默认的值)
 
     4、postProcessBeanFactory(beanFactory)：BeanFactory准备工作完成后进行的后置处理工作
         子类通过重写这个方法在BeanFactory创建并预准备完成以后做进一步的设置
+        WebApplicationContextUtils：从servlet中获取上下文的工具类
 
     -------------------BeanFactory创建和预准备工作完成--------------------------------------
 
@@ -32,12 +72,14 @@ Spring容器的refresh()：创建刷新
 
         BeanFactoryPostProcessor的方法：
             先执行BeanDefinitionRegistryPostProcessor
-                1>获取实现了priorityOrdered的优先处理
+                1>获取实现了priorityOrdered的优先处理，order的后处理，最后是剩下的
                 2>获取beanFactory实例
 
         InstaintiationAwareBeanPostProcessor
         SmartInstaintiationAwareBeanPostProcessor  ---> beanPostProcessor
         拦截我们的bean的创建：后置处理器里进行增强，动态代理
+
+    6.registerBeanPostProcessors：注册BeanPostProcessor
 
     6.initMessageSource()：标签国际化资源，初始化MessageSoource组件(国际化功能：消息解析，消息绑定)
         messageSource：判断容器中是否有ID为messageSource，类型是MessageSource容器
@@ -48,7 +90,7 @@ Spring容器的refresh()：创建刷新
         判断当前BeanFactory有没有一个bean为applicationEventMulticaster的bean
         没有就创建并注册到BeanFactory
 
-    8、onRefresh()：留给子类实现，重写此方法可以再容器刷新的时候可以自定义逻辑
+    8、onRefresh()：留给子类实现，重写此方法可以在容器刷新的时候可以自定义逻辑
 
     9、registerListeners()：将所有项目里面的applicationListener注册进到容器汇总
         从我们的容器中拿到所有的applicationListener
@@ -82,4 +124,3 @@ spring给出的扩展：
     一切框架必须考虑扩展性
     1.抽象
     2.设计模式
-

@@ -1,0 +1,11 @@
+JMS：
+
+    提供一个后门来对JVM中的对象进行操作（动态操作一些开关），不需要客户端(jconsole/jvisualvm)
+
+    用于不是基于WEB开发的工程
+
+    静态MBean：顶层接口需要有固定的后缀(MBean)，实现类是固定的前缀，不灵活
+
+    动态Mbean：
+
+    Spring Boot
